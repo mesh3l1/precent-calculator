@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>محول التاريخ الهجري والميلادي</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            direction: rtl;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            direction: rtl;
+            padding-top: 70px;
+        }
+
+        .converter {
+            background-color: white;
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .date-selects {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 1rem;
+            background-color: #f8f9fa;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 8px center;
+            background-size: 16px;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #3498db;
+            padding: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .nav-bar a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-bar a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-bar a.active {
+            background-color: white;
+            color: #3498db;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .result {
+            background-color: #f8f9fa;
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .result p {
+            margin: 8px 0;
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #3498db;
+            padding: 4px;
+            margin: 0;
+            width: auto;
+        }
+
+        .copy-btn:hover {
+            color: #2980b9;
+        }
+
+        .signature {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: #95a5a6;
+            opacity: 0.8;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+                padding-top: 60px;
+            }
+
+            .converter {
+                padding: 16px;
+                border-radius: 16px;
+            }
+
+            .nav-bar {
+                padding: 8px;
+            }
+
+            .nav-bar a {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+            }
+
+            select {
+                padding: 8px;
+                font-size: 16px; /* منع تكبير النص تلقائياً في iOS */
+                -webkit-appearance: none; /* إزالة التصميم الافتراضي في iOS */
+                border-radius: 8px;
+                background-position: left 4px center;
+                background-size: 14px;
+            }
+
+            .tab {
+                padding: 8px;
+                font-size: 0.9rem;
+            }
+
+            .result {
+                padding: 12px;
+                margin-top: 16px;
+            }
+
+            .result p {
+                font-size: 1rem;
+                margin: 6px 0;
+            }
+
+            .copy-btn {
+                padding: 2px;
+            }
+
+            .copy-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            /* تحسين المسافات بين عناصر التاريخ */
+            .date-selects {
+                gap: 6px;
+            }
+
+            /* تحسين حجم النص في العناوين */
+            h1 {
+                font-size: 1.3rem;
+                margin-bottom: 16px;
+            }
+
+            label {
+                font-size: 0.9rem;
+                margin-bottom: 6px;
+            }
+        }
+
+        /* تحسينات لمنع السلوك غير المرغوب في الأجهزة المحمولة */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        /* تحسين التفاعل مع اللمس */
+        .tab, .copy-btn, select, .nav-bar a {
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        /* منع تحديد النص */
+        .tab, .nav-bar a {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="index.html">حاسبة النسبة المئوية</a>
+        <a href="date-converter.html" class="active">محول التاريخ</a>
+    </div>
+
+    <div class="converter">
+        <h1>محول التاريخ الهجري والميلادي</h1>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('hijri-to-gregorian')">هجري إلى ميلادي</div>
+            <div class="tab" onclick="switchTab('gregorian-to-hijri')">ميلادي إلى هجري</div>
+        </div>
+
+        <div id="hijri-to-gregorian">
+            <div class="input-group">
+                <label>التاريخ الهجري</label>
+                <div class="date-selects">
+                    <select id="hijri-day" onchange="convertHijriToGregorian()"></select>
+                    <select id="hijri-month" onchange="convertHijriToGregorian()"></select>
+                    <select id="hijri-year" onchange="convertHijriToGregorian()"></select>
+                </div>
+            </div>
+            <div class="result">
+                <p>التاريخ الميلادي:</p>
+                <p id="gregorian-result">-</p>
+                <button class="copy-btn" onclick="copyToClipboard('gregorian-result')">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                        <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="gregorian-to-hijri" style="display: none;">
+            <div class="input-group">
+                <label>التاريخ الميلادي</label>
+                <div class="date-selects">
+                    <select id="gregorian-day" onchange="convertGregorianToHijri()"></select>
+                    <select id="gregorian-month" onchange="convertGregorianToHijri()"></select>
+                    <select id="gregorian-year" onchange="convertGregorianToHijri()"></select>
+                </div>
+            </div>
+            <div class="result">
+                <p>التاريخ الهجري:</p>
+                <p id="hijri-result">-</p>
+                <button class="copy-btn" onclick="copyToClipboard('hijri-result')">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                        <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="signature">MESH3L</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment-hijri@2.1.2/moment-hijri.min.js"></script>
+    <script>
+        const hijriMonthNames = [
+            'محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني',
+            'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان',
+            'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'
+        ];
+        const gregorianMonthNames = [
+            'يناير', 'فبراير', 'مارس', 'إبريل', 'مايو', 'يونيو',
+            'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+        ];
+
+        function gregorianToHijri(year, month, day) {
+            if (year < 1900 || year > 2100) return null;
+            
+            try {
+                // تحويل التاريخ الميلادي إلى كائن moment
+                const m = moment(`${year}-${month}-${day}`, 'YYYY-M-D');
+                if (!m.isValid()) return null;
+
+                // تحويل التاريخ إلى هجري
+                const hijriYear = parseInt(m.format('iYYYY'));
+                const hijriMonth = parseInt(m.format('iM'));
+                const hijriDay = parseInt(m.format('iD'));
+
+                // التحقق من صحة التاريخ الهجري
+                if (isNaN(hijriYear) || isNaN(hijriMonth) || isNaN(hijriDay)) {
+                    return null;
+                }
+
+                return {
+                    year: hijriYear,
+                    month: hijriMonth,
+                    day: hijriDay
+                };
+            } catch (e) {
+                console.error('Error in gregorianToHijri:', e);
+                return null;
+            }
+        }
+
+        function hijriToGregorian(year, month, day) {
+            if (!year || !month || !day) return null;
+            
+            try {
+                // تحويل التاريخ الهجري إلى كائن moment
+                const m = moment(`${year}/${month}/${day}`, 'iYYYY/iM/iD');
+                if (!m.isValid()) return null;
+
+                // تحويل التاريخ إلى ميلادي
+                const gregorianYear = parseInt(m.format('YYYY'));
+                const gregorianMonth = parseInt(m.format('M'));
+                const gregorianDay = parseInt(m.format('D'));
+
+                // التحقق من صحة التاريخ الميلادي
+                if (isNaN(gregorianYear) || isNaN(gregorianMonth) || isNaN(gregorianDay)) {
+                    return null;
+                }
+
+                return {
+                    year: gregorianYear,
+                    month: gregorianMonth,
+                    day: gregorianDay
+                };
+            } catch (e) {
+                console.error('Error in hijriToGregorian:', e);
+                return null;
+            }
+        }
+
+        function convertHijriToGregorian() {
+            const day = parseInt(document.getElementById('hijri-day').value);
+            const month = parseInt(document.getElementById('hijri-month').value);
+            const year = parseInt(document.getElementById('hijri-year').value);
+
+            if (!day || !month || !year) {
+                document.getElementById('gregorian-result').textContent = 'الرجاء اختيار التاريخ كاملاً';
+                return;
+            }
+
+            try {
+                const gregorianDate = hijriToGregorian(year, month, day);
+                
+                if (gregorianDate && !isNaN(gregorianDate.year)) {
+                    const formattedDate = `${gregorianDate.day} ${gregorianMonthNames[gregorianDate.month - 1]} ${gregorianDate.year}`;
+                    document.getElementById('gregorian-result').textContent = formattedDate;
+                } else {
+                    document.getElementById('gregorian-result').textContent = 'تاريخ غير صالح';
+                }
+            } catch (e) {
+                document.getElementById('gregorian-result').textContent = 'تاريخ غير صالح';
+                console.error('Error:', e);
+            }
+        }
+
+        function convertGregorianToHijri() {
+            const day = parseInt(document.getElementById('gregorian-day').value);
+            const month = parseInt(document.getElementById('gregorian-month').value);
+            const year = parseInt(document.getElementById('gregorian-year').value);
+
+            if (!day || !month || !year) {
+                document.getElementById('hijri-result').textContent = 'الرجاء اختيار التاريخ كاملاً';
+                return;
+            }
+
+            try {
+                const hijriDate = gregorianToHijri(year, month, day);
+                
+                if (hijriDate && hijriDate.year > 0 && hijriDate.month >= 1 && hijriDate.month <= 12) {
+                    const monthName = hijriMonthNames[hijriDate.month - 1];
+                    if (monthName) {
+                        const formattedDate = `${hijriDate.day} ${monthName} ${hijriDate.year}`;
+                        document.getElementById('hijri-result').textContent = formattedDate;
+                    } else {
+                        document.getElementById('hijri-result').textContent = 'تاريخ غير صالح';
+                    }
+                } else {
+                    document.getElementById('hijri-result').textContent = 'تاريخ غير صالح';
+                }
+            } catch (e) {
+                document.getElementById('hijri-result').textContent = 'تاريخ غير صالح';
+                console.error('Error:', e);
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            if (text !== '-' && text !== 'تاريخ غير صالح') {
+                navigator.clipboard.writeText(text).then(() => {
+                    const copyBtn = document.querySelector(`#${elementId}`).nextElementSibling;
+                    const originalColor = copyBtn.style.color;
+                    copyBtn.style.color = '#27ae60';
+                    setTimeout(() => {
+                        copyBtn.style.color = originalColor;
+                    }, 1000);
+                });
+            }
+        }
+
+        function initializeSelects() {
+            const hijriDay = document.getElementById('hijri-day');
+            const hijriMonth = document.getElementById('hijri-month');
+            const hijriYear = document.getElementById('hijri-year');
+            
+            const gregorianDay = document.getElementById('gregorian-day');
+            const gregorianMonth = document.getElementById('gregorian-month');
+            const gregorianYear = document.getElementById('gregorian-year');
+
+            // إضافة خيار فارغ في البداية
+            hijriDay.add(new Option('اليوم', ''));
+            hijriMonth.add(new Option('الشهر', ''));
+            hijriYear.add(new Option('السنة', ''));
+            
+            gregorianDay.add(new Option('اليوم', ''));
+            gregorianMonth.add(new Option('الشهر', ''));
+            gregorianYear.add(new Option('السنة', ''));
+
+            // Add days
+            for (let i = 1; i <= 30; i++) {
+                hijriDay.add(new Option(i, i));
+                gregorianDay.add(new Option(i, i));
+            }
+
+            // Add Hijri months
+            hijriMonthNames.forEach((month, index) => {
+                hijriMonth.add(new Option(month, index + 1));
+            });
+
+            // Add Gregorian months
+            gregorianMonthNames.forEach((month, index) => {
+                gregorianMonth.add(new Option(month, index + 1));
+            });
+
+            // Add years
+            for (let i = 1356; i <= 1500; i++) {
+                hijriYear.add(new Option(i, i));
+            }
+
+            for (let i = 1937; i <= 2077; i++) {
+                gregorianYear.add(new Option(i, i));
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            
+            if (tabId === 'hijri-to-gregorian') {
+                document.getElementById('hijri-to-gregorian').style.display = 'block';
+                document.getElementById('gregorian-to-hijri').style.display = 'none';
+            } else {
+                document.getElementById('hijri-to-gregorian').style.display = 'none';
+                document.getElementById('gregorian-to-hijri').style.display = 'block';
+            }
+        }
+
+        window.onload = initializeSelects;
+    </script>
+</body>
+</html>
